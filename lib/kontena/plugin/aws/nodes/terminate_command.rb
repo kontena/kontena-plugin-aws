@@ -14,8 +14,12 @@ module Kontena::Plugin::Aws::Nodes
 
       require 'kontena/machine/aws'
       grid = client(require_token).get("grids/#{current_grid}")
-      destroyer = Kontena::Machine::Aws::NodeDestroyer.new(client(require_token), access_key, secret_key, region)
+      destroyer = destroyer(client(require_token), access_key, secret_key, region)
       destroyer.run!(grid, name)
+    end
+
+    def destroyer(client, access_key, secret_key, region)
+      Kontena::Machine::Aws::NodeDestroyer.new(client, access_key, secret_key, region)
     end
   end
 end

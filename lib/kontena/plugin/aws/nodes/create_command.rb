@@ -22,8 +22,8 @@ module Kontena::Plugin::Aws::Nodes
       require_current_grid
 
       require 'kontena/machine/aws'
-      grid = client(require_token).get("grids/#{current_grid}")
-      provisioner = Kontena::Machine::Aws::NodeProvisioner.new(client(require_token), access_key, secret_key, region)
+      grid = grid(current_grid)
+      provisioner = provisioner(client(require_token), access_key, secret_key, region)
       provisioner.run!(
           master_uri: api_url,
           grid_token: grid['token'],
@@ -39,6 +39,21 @@ module Kontena::Plugin::Aws::Nodes
           associate_public_ip: associate_public_ip?,
           security_groups: security_groups
       )
+    end
+
+    # @param [String] id
+    # @return [Hash]
+    def grid(id)
+      client(require_token).get("grids/#{id}")
+    end
+
+    # @param [Kontena::Client] client
+    # @param [String] access_key
+    # @param [String] secret_key
+    # @param [String] region
+    # @return [Kontena::Machine::Aws::NodeProvisioner]
+    def provisioner(client, access_key, secret_key, region)
+      Kontena::Machine::Aws::NodeProvisioner.new(client, access_key, secret_key, region)
     end
   end
 end

@@ -26,7 +26,7 @@ module Kontena::Plugin::Aws::Master
     def execute
       require 'kontena/machine/aws'
 
-      provisioner = Kontena::Machine::Aws::MasterProvisioner.new(access_key, secret_key, region)
+      provisioner = provisioner(access_key, secret_key, region)
       provisioner.run!(
           type: type,
           vpc: vpc_id,
@@ -43,6 +43,10 @@ module Kontena::Plugin::Aws::Master
           associate_public_ip: associate_public_ip?,
           security_groups: security_groups
       )
+    end
+
+    def provisioner(access_key, secret_key, region)
+      Kontena::Machine::Aws::MasterProvisioner.new(access_key, secret_key, region)
     end
   end
 end

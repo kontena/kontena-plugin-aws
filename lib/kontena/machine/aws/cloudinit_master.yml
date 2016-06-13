@@ -78,9 +78,10 @@ coreos:
         Restart=always
         RestartSec=5
         EnvironmentFile=/etc/kontena-server.env
+        EnvironmentFile=-/etc/kontena-server.custom.env
         ExecStartPre=-/usr/bin/docker stop kontena-server-api
         ExecStartPre=-/usr/bin/docker rm kontena-server-api
-        ExecStartPre=/usr/bin/docker pull kontena/server:${KONTENA_VERSION}
+        ExecStartPre=-/usr/bin/docker pull kontena/server:${KONTENA_VERSION}
         ExecStart=/usr/bin/docker run --name kontena-server-api \
   <% if mongodb_uri -%>
             -e MONGODB_URI=<%= mongodb_uri %> \
@@ -112,7 +113,8 @@ coreos:
         Restart=always
         RestartSec=5
         EnvironmentFile=/etc/kontena-server.env
+        EnvironmentFile=-/etc/kontena-server.custom.env
         ExecStartPre=-/usr/bin/docker stop kontena-server-haproxy
         ExecStartPre=-/usr/bin/docker rm kontena-server-haproxy
-        ExecStartPre=/usr/bin/docker pull kontena/haproxy:latest
+        ExecStartPre=-/usr/bin/docker pull kontena/haproxy:latest
         ExecStart=/opt/bin/kontena-haproxy.sh

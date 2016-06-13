@@ -58,9 +58,10 @@ coreos:
         Restart=always
         RestartSec=5
         EnvironmentFile=/etc/kontena-agent.env
+        EnvironmentFile=-/etc/kontena-agent.custom.env
         ExecStartPre=-/usr/bin/docker stop kontena-agent
         ExecStartPre=-/usr/bin/docker rm kontena-agent
-        ExecStartPre=/usr/bin/docker pull kontena/agent:${KONTENA_VERSION}
+        ExecStartPre=-/usr/bin/docker pull kontena/agent:${KONTENA_VERSION}
         ExecStart=/usr/bin/docker run --name kontena-agent \
             -e KONTENA_URI=${KONTENA_URI} \
             -e KONTENA_TOKEN=${KONTENA_TOKEN} \
