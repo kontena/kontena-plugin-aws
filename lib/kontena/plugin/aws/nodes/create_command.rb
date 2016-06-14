@@ -22,7 +22,7 @@ module Kontena::Plugin::Aws::Nodes
       require_current_grid
 
       require 'kontena/machine/aws'
-      grid = grid(current_grid)
+      grid = fetch_grid(current_grid)
       provisioner = provisioner(client(require_token), access_key, secret_key, region)
       provisioner.run!(
           master_uri: api_url,
@@ -43,7 +43,7 @@ module Kontena::Plugin::Aws::Nodes
 
     # @param [String] id
     # @return [Hash]
-    def grid(id)
+    def fetch_grid(id)
       client(require_token).get("grids/#{id}")
     end
 

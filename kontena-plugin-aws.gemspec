@@ -9,7 +9,7 @@ Gem::Specification.new do |spec|
   spec.authors       = ["Kontena, Inc."]
   spec.email         = ["info@kontena.io"]
 
-  spec.summary       = "Kontena Amazon Web Services plugin"
+  spec.summary       = "Kontena AWS plugin"
   spec.description   = "Kontena Amazon Web Services plugin"
   spec.homepage      = "https://github.com/kontena/kontena-plugin-aws"
   spec.license       = "Apache-2.0"
@@ -17,8 +17,8 @@ Gem::Specification.new do |spec|
   spec.files         = `git ls-files -z`.split("\x0").reject { |f| f.match(%r{^(test|spec|features)/}) }
   spec.require_paths = ["lib"]
 
-  spec.add_runtime_dependency "kontena-cli", ">= 0.14.0"
-  spec.add_runtime_dependency "aws-sdk", "~> 2.3.11"
+  spec.add_runtime_dependency 'kontena-cli', '>= 0.15.0.beta1'
+  spec.add_runtime_dependency 'aws-sdk', '~> 2.3', '>= 2.3.11'
   spec.add_development_dependency "bundler", "~> 1.11"
   spec.add_development_dependency "rake", "~> 10.0"
 end
