@@ -6,7 +6,7 @@ require_relative 'common'
 
 module Kontena::Machine::Aws
   class NodeProvisioner
-    include RandomName
+    include Kontena::Machine::RandomName
     include Common
 
     attr_reader :ec2, :api_client

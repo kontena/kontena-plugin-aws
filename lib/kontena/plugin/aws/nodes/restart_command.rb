@@ -12,18 +12,14 @@ module Kontena::Plugin::Aws::Nodes
       require_api_url
       require_current_grid
 
-      require 'kontena/machine/aws'
+      require_relative '../../../machine/aws'
 
-      client = Fog::Compute.new(:provider => 'AWS', :aws_access_key_id => access_key, :aws_secret_access_key => secret_key, :region => region)
-      instance = client.servers.all({'tag:kontena_name' => name}).first
-      if instance
-        instance.reboot
-        ShellSpinner "Restarting AWS instance #{name.colorize(:cyan)} " do
-          instance.wait_for { ready? }
-        end
-      else
-        abort "Cannot find instance #{name.colorize(:cyan)} in AWS"
-      end
+      restarter = restarter(access_key, secret_key, region)
+      restarter.run!(name)
+    end
+
+    def restarter(access_key, secret_key, region)
+      Kontena::Machine::Aws::NodeRestarter.new(access_key, secret_key, region)
     end
   end
 end

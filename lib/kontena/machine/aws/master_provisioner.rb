@@ -6,9 +6,9 @@ require_relative 'common'
 
 module Kontena::Machine::Aws
   class MasterProvisioner
-    include RandomName
+    include Kontena::Machine::RandomName
+    include Kontena::Machine::CertHelper
     include Common
-    include Machine::CertHelper
     attr_reader :ec2, :http_client, :region
 
     # @param [String] access_key_id aws_access_key_id
