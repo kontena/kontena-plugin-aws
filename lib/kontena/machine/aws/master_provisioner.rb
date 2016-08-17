@@ -2,6 +2,8 @@ require 'fileutils'
 require 'erb'
 require 'open3'
 require 'shell-spinner'
+require 'securerandom'
+
 require_relative 'common'
 
 module Kontena::Machine::Aws
@@ -41,20 +43,18 @@ module Kontena::Machine::Aws
         subnet = ec2.subnet(opts[:subnet])
       end
       abort('Failed to find subnet!') unless subnet
-      userdata_vars = {
+
+      name = generate_name
+
+      userdata_vars = opts.merge(
           ssl_cert: ssl_cert,
-          auth_server: opts[:auth_server],
-          version: opts[:version],
-          vault_secret: opts[:vault_secret],
-          vault_iv: opts[:vault_iv],
-          mongodb_uri: opts[:mongodb_uri]
-      }
+          server_name: name.sub('kontena-master-', '')
+      )
 
       security_groups = opts[:security_groups] ?
           resolve_security_groups_to_ids(opts[:security_groups], opts[:vpc]) :
           ensure_security_group(opts[:vpc])
 
-      name = generate_name
       ec2_instance = ec2.create_instances({
         image_id: ami,
         min_count: 1,
@@ -104,8 +104,12 @@ module Kontena::Machine::Aws
         end
       end
 
-      puts "Kontena Master is now running at #{master_url}"
-      puts "Use #{"kontena login --name=#{name.sub('kontena-master-', '')} #{master_url}".colorize(:light_black)} to complete Kontena Master setup"
+      puts "Kontena Master is now running at #{master_url}".colorize(:green)
+      {
+        name: name.sub('kontena-master-', ''),
+        public_ip: public_ip,
+        code: opts[:initial_admin_code]
+      }
     end
 
     ##
