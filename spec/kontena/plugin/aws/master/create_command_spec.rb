@@ -22,7 +22,9 @@ describe Kontena::Plugin::Aws::Master::CreateCommand do
       options = [
         '--access-key', 'foo',
         '--secret-key', 'bar',
-        '--key-pair', 'master-key'
+        '--key-pair', 'master-key',
+        '--no-prompt',
+        '--skip-auth-provider'
       ]
       expect(subject).to receive(:provisioner).with('foo', 'bar', 'eu-west-1').and_return(provisioner)
       expect(provisioner).to receive(:run!).with(

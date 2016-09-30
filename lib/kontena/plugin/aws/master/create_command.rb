@@ -4,6 +4,7 @@ module Kontena::Plugin::Aws::Master
   class CreateCommand < Kontena::Command
     include Kontena::Cli::Common
 
+    option "--name", "[NAME]", "Set Master name"
     option "--access-key", "ACCESS_KEY", "AWS access key ID", required: true
     option "--secret-key", "SECRET_KEY", "AWS secret key", required: true
     option "--key-pair", "KEY_PAIR", "EC2 key pair name", required: true
@@ -26,6 +27,7 @@ module Kontena::Plugin::Aws::Master
 
       provisioner = provisioner(access_key, secret_key, region)
       provisioner.run!(
+          name: name,
           type: type,
           vpc: vpc_id,
           zone: zone,

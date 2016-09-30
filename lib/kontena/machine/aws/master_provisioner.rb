@@ -1,7 +1,6 @@
 require 'fileutils'
 require 'erb'
 require 'open3'
-require 'shell-spinner'
 require 'securerandom'
 
 require_relative 'common'
@@ -11,6 +10,8 @@ module Kontena::Machine::Aws
     include Kontena::Machine::RandomName
     include Kontena::Machine::CertHelper
     include Common
+    include Kontena::Cli::ShellSpinner
+
     attr_reader :ec2, :http_client, :region
 
     # @param [String] access_key_id aws_access_key_id
@@ -29,7 +30,7 @@ module Kontena::Machine::Aws
         abort('Invalid ssl cert') unless File.exists?(File.expand_path(opts[:ssl_cert]))
         ssl_cert = File.read(File.expand_path(opts[:ssl_cert]))
       else
-        ShellSpinner "Generating self-signed SSL certificate" do
+        spinner "Generating self-signed SSL certificate" do
           ssl_cert = generate_self_signed_cert
         end
       end
@@ -44,7 +45,7 @@ module Kontena::Machine::Aws
       end
       abort('Failed to find subnet!') unless subnet
 
-      name = generate_name
+      name = opts[:name] || generate_name
 
       userdata_vars = opts.merge(
           ssl_cert: ssl_cert,
@@ -88,8 +89,8 @@ module Kontena::Machine::Aws
         ]
       })
 
-      ShellSpinner "Creating AWS instance #{name.colorize(:cyan)} " do
-        sleep 5 until ec2_instance.reload.state.name == 'running'
+      spinner "Creating AWS instance #{name.colorize(:cyan)} " do
+        sleep 1 until ec2_instance.reload.state.name == 'running'
       end
       public_ip = ec2_instance.reload.public_ip_address
       if public_ip.nil?
@@ -99,12 +100,13 @@ module Kontena::Machine::Aws
         master_url = "https://#{ec2_instance.public_ip_address}"
         Excon.defaults[:ssl_verify_peer] = false
         http_client = Excon.new(master_url, :connect_timeout => 10)
-        ShellSpinner "Waiting for #{name.colorize(:cyan)} to start " do
-          sleep 5 until master_running?(http_client)
+        spinner "Waiting for #{name.colorize(:cyan)} to start " do
+          sleep 1 until master_running?(http_client)
         end
       end
-
+      puts
       puts "Kontena Master is now running at #{master_url}".colorize(:green)
+      puts
       {
         name: name.sub('kontena-master-', ''),
         public_ip: public_ip,
@@ -120,7 +122,7 @@ module Kontena::Machine::Aws
       group_id = resolve_security_groups_to_ids(group_name, vpc_id)
 
       if group_id.empty?
-        ShellSpinner "Creating AWS security group" do
+        spinner "Creating AWS security group" do
           sg = create_security_group(group_name, vpc_id)
           group_id = [sg.group_id]
         end
