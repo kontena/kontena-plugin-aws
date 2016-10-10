@@ -10,7 +10,7 @@ module Kontena::Machine::Aws
     include Kontena::Machine::RandomName
     include Kontena::Machine::CertHelper
     include Common
-    include Kontena::Cli::ShellSpinner
+    include Kontena::Cli::Common
 
     attr_reader :ec2, :http_client, :region
 
@@ -103,10 +103,8 @@ module Kontena::Machine::Aws
         spinner "Waiting for #{name.colorize(:cyan)} to start " do
           sleep 1 until master_running?(http_client)
         end
+        vfakespinner "Kontena Master is now running at #{master_url}".colorize(:green)
       end
-      puts
-      puts "Kontena Master is now running at #{master_url}".colorize(:green)
-      puts
       {
         name: name.sub('kontena-master-', ''),
         public_ip: public_ip,
