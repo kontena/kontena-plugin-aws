@@ -1,9 +1,9 @@
-require 'shell-spinner'
 require_relative 'common'
 
 module Kontena::Machine::Aws
   class NodeRestarter
     include Common
+    include Kontena::Cli::ShellSpinner
 
     attr_reader :ec2, :api_client
 
@@ -26,7 +26,7 @@ module Kontena::Machine::Aws
       abort("There are multiple instances with name #{name}") if instances.to_a.size > 1
       instance = instances.first
       if instance
-        ShellSpinner "Restarting AWS instance #{name.colorize(:cyan)} " do
+        spinner "Restarting AWS instance #{name.colorize(:cyan)} " do
           instance.reboot(dry_run: false)
         end
       else

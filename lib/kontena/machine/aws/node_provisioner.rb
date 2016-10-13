@@ -1,12 +1,12 @@
 require 'fileutils'
 require 'erb'
 require 'open3'
-require 'shell-spinner'
 require_relative 'common'
 
 module Kontena::Machine::Aws
   class NodeProvisioner
     include Kontena::Machine::RandomName
+    include Kontena::Cli::ShellSpinner
     include Common
 
     attr_reader :ec2, :api_client
@@ -83,12 +83,12 @@ module Kontena::Machine::Aws
         ]
       })
 
-      ShellSpinner "Creating AWS instance #{name.colorize(:cyan)} " do
-        sleep 5 until ec2_instance.reload.state.name == 'running'
+      spinner "Creating AWS instance #{name.colorize(:cyan)} " do
+        sleep 1 until ec2_instance.reload.state.name == 'running'
       end
       node = nil
-      ShellSpinner "Waiting for node #{name.colorize(:cyan)} join to grid #{opts[:grid].colorize(:cyan)} " do
-        sleep 2 until node = instance_exists_in_grid?(opts[:grid], name)
+      spinner "Waiting for node #{name.colorize(:cyan)} join to grid #{opts[:grid].colorize(:cyan)} " do
+        sleep 1 until node = instance_exists_in_grid?(opts[:grid], name)
       end
       labels = [
         "region=#{region}",
@@ -106,7 +106,7 @@ module Kontena::Machine::Aws
       group_id = resolve_security_groups_to_ids(group_name, vpc_id)
 
       if group_id.empty?
-        ShellSpinner "Creating AWS security group" do
+        spinner "Creating AWS security group" do
           sg = create_security_group(group_name, vpc_id)
           group_id = [sg.group_id]
         end
