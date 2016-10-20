@@ -7,7 +7,7 @@ module Kontena::Plugin::Aws::Nodes
     parameter "[NAME]", "Node name"
     option "--access-key", "ACCESS_KEY", "AWS access key ID", environment_variable: "AWS_ACCESS_KEY"
     option "--secret-key", "SECRET_KEY", "AWS secret key", environment_variable: "AWS_SECRET_KEY"
-    option "--region", "REGION", "EC2 Region (default: node's region)"
+    option "--region", "REGION", "EC2 Region (default: node's region)", environment_variable: "AWS_REGION"
     option "--force", :flag, "Force remove", default: false, attribute_name: :forced
 
     def execute
