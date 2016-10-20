@@ -25,29 +25,29 @@ module Kontena::Plugin::Aws::Master
     option "--security-groups", "SECURITY_GROUPS", "Comma separated list of security groups (names) where the new instance will be attached (default: create 'kontena_master' group if not already existing)"
 
     def execute
-      require 'kontena/machine/aws'      
-      access_key = ask_aws_access_key
-      secret_key = ask_aws_secret_key
-      region = ask_aws_region(access_key, secret_key)
-      zone = ask_aws_az(access_key, secret_key, region)
-      vpc_id = ask_aws_vpc(access_key, secret_key, region)
+      require 'kontena/machine/aws'
+      aws_access_key = ask_aws_access_key
+      aws_secret_key = ask_aws_secret_key
+      aws_region = ask_aws_region(aws_access_key, aws_secret_key)
+      aws_zone = ask_aws_az(aws_access_key, aws_secret_key, aws_region)
+      aws_vpc_id = ask_aws_vpc(aws_access_key, aws_secret_key, aws_region)
 
-      exit_with_error("Could not find any Virtual Private Cloud (VPC). Please create one in the AWS console first.") unless vpc_id
-      subnet_id = ask_aws_subnet(access_key, secret_key, region, zone, vpc_id)
-      key_pair = ask_aws_key_pair(access_key, secret_key, region)
-      type = ask_aws_instance_type
-      storage = ask_aws_storage
-      provisioner = provisioner(access_key, secret_key, region)
+      exit_with_error("Could not find any Virtual Private Cloud (VPC). Please create one in the AWS console first.") unless aws_vpc_id
+      aws_subnet_id = ask_aws_subnet(aws_access_key, aws_secret_key, aws_region, aws_zone, aws_vpc_id)
+      aws_key_pair = ask_aws_key_pair(aws_access_key, aws_secret_key, aws_region)
+      aws_type = ask_aws_instance_type
+      aws_storage = ask_aws_storage
+      provisioner = provisioner(aws_access_key, aws_secret_key, aws_region)
       provisioner.run!(
           name: name,
-          type: type,
-          vpc: vpc_id,
-          zone: zone,
-          subnet: subnet_id,
+          type: aws_type,
+          vpc: aws_vpc_id,
+          zone: aws_zone,
+          subnet: aws_subnet_id,
           ssl_cert: ssl_cert,
-          storage: storage,
+          storage: aws_storage,
           version: version,
-          key_pair: key_pair,
+          key_pair: aws_key_pair,
           vault_secret: vault_secret || SecureRandom.hex(24),
           vault_iv: vault_iv || SecureRandom.hex(24),
           mongodb_uri: mongodb_uri,

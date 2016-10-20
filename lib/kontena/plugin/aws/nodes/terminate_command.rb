@@ -1,5 +1,5 @@
 module Kontena::Plugin::Aws::Nodes
-  class TerminateCommand < Clamp::Command
+  class TerminateCommand < Kontena::Command
     include Kontena::Cli::Common
     include Kontena::Cli::GridOptions
     include Kontena::Plugin::Aws::Prompts
@@ -17,14 +17,14 @@ module Kontena::Plugin::Aws::Nodes
       token = require_token
       node_name = self.name || ask_node(token)
       node = client(token).get("grids/#{current_grid}/nodes/#{node_name}")
-      access_key = ask_aws_access_key
-      secret_key = ask_aws_secret_key
-      region = self.region || resolve_or_ask_region(node)
+      aws_access_key = ask_aws_access_key
+      aws_secret_key = ask_aws_secret_key
+      aws_region = self.region || resolve_or_ask_region(node, aws_access_key, aws_secret_key)
 
       confirm_command(node_name) unless forced?
       require 'kontena/machine/aws'
       grid = client(require_token).get("grids/#{current_grid}")
-      destroyer = destroyer(client(require_token), access_key, secret_key, region)
+      destroyer = destroyer(client(require_token), aws_access_key, aws_secret_key, aws_region)
       destroyer.run!(grid, node_name)
     end
 
@@ -32,10 +32,11 @@ module Kontena::Plugin::Aws::Nodes
       Kontena::Machine::Aws::NodeDestroyer.new(client, access_key, secret_key, region)
     end
 
-    def resolve_or_ask_region(node)
-      if node['labels'] && !region = node['labels'].find{ |l| l.split('=').first == 'region' }.split('=').last
-        region = ask_aws_region(access_key, secret_key)
+    def resolve_or_ask_region(node, access_key, secret_key)
+      if node['labels'] && region_label = node['labels'].find{ |l| l.split('=').first == 'region' }
+        region = region_label.split('=').last
       end
+      region = ask_aws_region(access_key, secret_key) unless region
       region
     end
   end

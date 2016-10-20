@@ -1,3 +1,4 @@
+require 'aws-sdk'
 module Kontena::Plugin::Aws::Prompts
 
   def ask_aws_access_key
@@ -19,7 +20,7 @@ module Kontena::Plugin::Aws::Prompts
   def ask_aws_key_pair(access_key, secret_key, region)
     if self.key_pair.nil?
       prompt.select("Choose EC2 key pair: ") do |menu|
-        aws_client = Aws::EC2::Client.new(access_key_id: access_key, secret_access_key: secret_key, region: region)
+        aws_client = ::Aws::EC2::Client.new(access_key_id: access_key, secret_access_key: secret_key, region: region)
         aws_client.describe_key_pairs.key_pairs.each{ |key_pair|
           menu.choice key_pair.key_name, key_pair.key_name
         }
@@ -32,7 +33,7 @@ module Kontena::Plugin::Aws::Prompts
   def ask_aws_region(access_key, secret_key, default = 'eu-west-1')
     if self.region.nil?
       prompt.select("Choose EC2 region: ") do |menu|
-        aws_client = Aws::EC2::Client.new(access_key_id: access_key, secret_access_key: secret_key, region: 'eu-west-1')
+        aws_client = ::Aws::EC2::Client.new(access_key_id: access_key, secret_access_key: secret_key, region: 'eu-west-1')
         i = 1
         aws_client.describe_regions.regions.sort_by{|r| r.region_name }.each{ |region|
           menu.choice region.region_name, region.region_name
@@ -50,7 +51,7 @@ module Kontena::Plugin::Aws::Prompts
   def ask_aws_az(access_key, secret_key, region)
     if self.zone.nil?
       prompt.select("Choose EC2 Availability Zone: ") do |menu|
-        aws_client = Aws::EC2::Client.new(access_key_id: access_key, secret_access_key: secret_key, region: region)
+        aws_client = ::Aws::EC2::Client.new(access_key_id: access_key, secret_access_key: secret_key, region: region)
         aws_client.describe_availability_zones.availability_zones.sort_by{|r| r.zone_name }.each{ |zone|
           if zone.state == 'available'
             menu.choice zone.zone_name, zone.zone_name.sub(zone.region_name, '')
@@ -64,7 +65,7 @@ module Kontena::Plugin::Aws::Prompts
 
   def ask_aws_vpc(access_key, secret_key, region)
     if self.vpc_id.nil?
-      aws_client = Aws::EC2::Client.new(access_key_id: access_key, secret_access_key: secret_key, region: region)
+      aws_client = ::Aws::EC2::Client.new(access_key_id: access_key, secret_access_key: secret_key, region: region)
       vpcs = aws_client.describe_vpcs.vpcs
       return nil if vpcs.size == 0
       if vpcs.size == 1 && vpcs.first.state == "available"
@@ -87,7 +88,7 @@ module Kontena::Plugin::Aws::Prompts
 
   def ask_aws_subnet(access_key, secret_key, region, zone, vpc)
     if self.subnet_id.nil?
-      aws_client = Aws::EC2::Client.new(access_key_id: access_key, secret_access_key: secret_key, region: region)
+      aws_client = ::Aws::EC2::Client.new(access_key_id: access_key, secret_access_key: secret_key, region: region)
       subnets_result = aws_client.describe_subnets(filters: [
         { name: "vpc-id", values: [vpc] },
         { name: "availability-zone", values: [zone]}
