@@ -9,11 +9,12 @@ module Kontena::Plugin::Aws::Nodes
     option "--secret-key", "SECRET_KEY", "AWS secret key", environment_variable: "AWS_SECRET_KEY"
     option "--key-pair", "KEY_PAIR", "EC2 Key Pair"
     option "--region", "REGION", "EC2 Region"
-    option "--zone", "ZONE", "EC2 Availability Zone"
+    option "--zone", "ZONE", "EC2 Availability Zone (a,b,c,d...)"
     option "--vpc-id", "VPC ID", "Virtual Private Cloud (VPC) ID (default: default vpc)"
     option "--subnet-id", "SUBNET ID", "VPC option to specify subnet to launch instance into (default: first subnet in vpc/az)"
     option "--type", "SIZE", "Instance type"
     option "--storage", "STORAGE", "Storage size (GiB)"
+    option "--count", "COUNT", "How many instances to create"
     option "--version", "VERSION", "Define installed Kontena version", default: 'latest'
     option "--associate-public-ip-address", :flag, "Whether to associated public IP in case the VPC defaults to not doing it", default: true, attribute_name: :associate_public_ip
     option "--security-groups", "SECURITY GROUPS", "Comma separated list of security groups (names) where the new instance will be attached (default: create grid specific group if not already existing)"
@@ -24,29 +25,31 @@ module Kontena::Plugin::Aws::Nodes
 
       require 'kontena/machine/aws'
       grid = fetch_grid(current_grid)
-      access_key = ask_aws_access_key
-      secret_key = ask_aws_secret_key
-      region = ask_aws_region(access_key, secret_key)
-      zone = ask_aws_az(access_key, secret_key, region)
-      vpc_id = ask_aws_vpc(access_key, secret_key, region)
-      exit_with_error("Could not find any Virtual Private Cloud (VPC). Please create one in the AWS console first.") unless vpc_id
-      subnet_id = ask_aws_subnet(access_key, secret_key, region, zone, vpc_id)
-      key_pair = ask_aws_key_pair(access_key, secret_key, region)
-      type = ask_aws_instance_type
-      storage = ask_aws_storage
-      provisioner = provisioner(client(require_token), access_key, secret_key, region)
+      aws_access_key = ask_aws_access_key
+      aws_secret_key = ask_aws_secret_key
+      aws_region = ask_aws_region(aws_access_key, aws_secret_key)
+      aws_zone = ask_aws_az(aws_access_key, aws_secret_key, aws_region)
+      aws_vpc_id = ask_aws_vpc(aws_access_key, aws_secret_key, aws_region)
+      exit_with_error("Could not find any Virtual Private Cloud (VPC). Please create one in the AWS console first.") unless aws_vpc_id
+      aws_subnet_id = ask_aws_subnet(aws_access_key, aws_secret_key, aws_region, aws_zone, aws_vpc_id)
+      aws_key_pair = ask_aws_key_pair(aws_access_key, aws_secret_key, aws_region)
+      aws_type = ask_aws_instance_type
+      aws_storage = ask_aws_storage
+      aws_count = ask_instance_count
+      provisioner = provisioner(client(require_token), aws_access_key, aws_secret_key, aws_region)
       provisioner.run!(
           master_uri: api_url,
           grid_token: grid['token'],
           grid: current_grid,
           name: name,
-          type: type,
-          vpc: vpc_id,
-          zone: zone,
-          subnet: subnet_id,
-          storage: storage,
+          type: aws_type,
+          vpc: aws_vpc_id,
+          zone: aws_zone,
+          subnet: aws_subnet_id,
+          storage: aws_storage,
           version: version,
-          key_pair: key_pair,
+          key_pair: aws_key_pair,
+          count: aws_count,
           associate_public_ip: associate_public_ip?,
           security_groups: security_groups
       )
@@ -65,6 +68,14 @@ module Kontena::Plugin::Aws::Nodes
     # @return [Kontena::Machine::Aws::NodeProvisioner]
     def provisioner(client, access_key, secret_key, region)
       Kontena::Machine::Aws::NodeProvisioner.new(client, access_key, secret_key, region)
+    end
+
+    def ask_instance_count
+      if self.count.nil?
+        prompt.ask('How many instances?: ', default: 1)
+      else
+        self.count
+      end
     end
   end
 end
