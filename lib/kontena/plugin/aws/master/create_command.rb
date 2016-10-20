@@ -12,7 +12,7 @@ module Kontena::Plugin::Aws::Master
     option "--key-pair", "KEY_PAIR", "EC2 key pair name"
     option "--ssl-cert", "SSL CERT", "SSL certificate file (default: generate self-signed cert)"
     option "--region", "REGION", "EC2 Region", environment_variable: "AWS_REGION"
-    option "--zone", "ZONE", "EC2 Availability Zone (a,b,c,d)"
+    option "--zone", "ZONE", "EC2 Availability Zone (a,b,c,d,e)"
     option "--vpc-id", "VPC ID", "Virtual Private Cloud (VPC) ID"
     option "--subnet-id", "SUBNET ID", "VPC option to specify subnet to launch instance into (default: first subnet in vpc/az)"
     option "--type", "SIZE", "Instance type"

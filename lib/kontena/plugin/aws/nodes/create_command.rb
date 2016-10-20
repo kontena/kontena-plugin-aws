@@ -9,7 +9,7 @@ module Kontena::Plugin::Aws::Nodes
     option "--secret-key", "SECRET_KEY", "AWS secret key", environment_variable: "AWS_SECRET_KEY"
     option "--key-pair", "KEY_PAIR", "EC2 Key Pair"
     option "--region", "REGION", "EC2 Region", environment_variable: "AWS_REGION"
-    option "--zone", "ZONE", "EC2 Availability Zone (a,b,c,d...)"
+    option "--zone", "ZONE", "EC2 Availability Zone (a,b,c,d,e)"
     option "--vpc-id", "VPC ID", "Virtual Private Cloud (VPC) ID (default: default vpc)"
     option "--subnet-id", "SUBNET ID", "VPC option to specify subnet to launch instance into (default: first subnet in vpc/az)"
     option "--type", "SIZE", "Instance type"
