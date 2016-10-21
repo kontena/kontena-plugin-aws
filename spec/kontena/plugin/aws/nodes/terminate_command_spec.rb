@@ -1,6 +1,6 @@
 require 'spec_helper'
 require 'kontena/plugin/aws_command'
-
+require 'aws-sdk'
 describe Kontena::Plugin::Aws::Nodes::TerminateCommand do
 
   let(:subject) do
@@ -23,18 +23,21 @@ describe Kontena::Plugin::Aws::Nodes::TerminateCommand do
       allow(subject).to receive(:require_token).and_return('12345')
       allow(subject).to receive(:grid).and_return({})
       allow(subject).to receive(:client).and_return(client)
+      allow(Aws::EC2::Client).to receive(:new).and_return(spy)
     end
 
     it 'raises usage error if no options are defined' do
-      expect {
-        subject.run([])
-      }.to raise_error(Clamp::UsageError)
+      allow(subject).to receive(:destroyer).and_return(provisioner)
+      expect(subject).to receive(:prompt).at_least(:once).and_return(spy)
+      subject.run([])
     end
 
     it 'passes options to provisioner' do
       options = [
         '--access-key', 'foo',
         '--secret-key', 'bar',
+        '--region', 'eu-west-1',
+        '--force',
         'my-node'
       ]
       expect(subject).to receive(:destroyer).with(client, 'foo', 'bar', 'eu-west-1').and_return(provisioner)

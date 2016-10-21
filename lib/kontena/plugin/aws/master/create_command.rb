@@ -1,20 +1,22 @@
 require 'securerandom'
+require_relative '../prompts'
 
 module Kontena::Plugin::Aws::Master
   class CreateCommand < Kontena::Command
     include Kontena::Cli::Common
+    include Kontena::Plugin::Aws::Prompts
 
     option "--name", "[NAME]", "Set Master name"
-    option "--access-key", "ACCESS_KEY", "AWS access key ID", required: true
-    option "--secret-key", "SECRET_KEY", "AWS secret key", required: true
-    option "--key-pair", "KEY_PAIR", "EC2 key pair name", required: true
+    option "--access-key", "ACCESS_KEY", "AWS access key ID", environment_variable: "AWS_ACCESS_KEY_ID"
+    option "--secret-key", "SECRET_KEY", "AWS secret access key", environment_variable: "AWS_SECRET_ACCESS_KEY"
+    option "--key-pair", "KEY_PAIR", "EC2 key pair name"
     option "--ssl-cert", "SSL CERT", "SSL certificate file (default: generate self-signed cert)"
-    option "--region", "REGION", "EC2 Region", default: 'eu-west-1'
-    option "--zone", "ZONE", "EC2 Availability Zone", default: 'a'
-    option "--vpc-id", "VPC ID", "Virtual Private Cloud (VPC) ID (default: default vpc)"
-    option "--subnet-id", "SUBNET ID", "VPC option to specify subnet to launch instance into (default: first subnet from vpc/az)"
-    option "--type", "SIZE", "Instance type", default: 't2.small'
-    option "--storage", "STORAGE", "Storage size (GiB)", default: '30'
+    option "--region", "REGION", "EC2 Region", environment_variable: "AWS_REGION"
+    option "--zone", "ZONE", "EC2 Availability Zone (a,b,c,d,e)"
+    option "--vpc-id", "VPC ID", "Virtual Private Cloud (VPC) ID"
+    option "--subnet-id", "SUBNET ID", "VPC option to specify subnet to launch instance into (default: first subnet in vpc/az)"
+    option "--type", "SIZE", "Instance type"
+    option "--storage", "STORAGE", "Storage size (GiB)"
     option "--vault-secret", "VAULT_SECRET", "Secret key for Vault (default: generate random secret)"
     option "--vault-iv", "VAULT_IV", "Initialization vector for Vault (default: generate random iv)"
     option "--mongodb-uri", "URI", "External MongoDB uri (optional)"
@@ -24,18 +26,28 @@ module Kontena::Plugin::Aws::Master
 
     def execute
       require 'kontena/machine/aws'
+      aws_access_key = ask_aws_access_key
+      aws_secret_key = ask_aws_secret_key
+      aws_region = ask_aws_region(aws_access_key, aws_secret_key)
+      aws_zone = ask_aws_az(aws_access_key, aws_secret_key, aws_region)
+      aws_vpc_id = ask_aws_vpc(aws_access_key, aws_secret_key, aws_region)
 
-      provisioner = provisioner(access_key, secret_key, region)
+      exit_with_error("Could not find any Virtual Private Cloud (VPC). Please create one in the AWS console first.") unless aws_vpc_id
+      aws_subnet_id = ask_aws_subnet(aws_access_key, aws_secret_key, aws_region, aws_zone, aws_vpc_id)
+      aws_key_pair = ask_aws_key_pair(aws_access_key, aws_secret_key, aws_region)
+      aws_type = ask_aws_instance_type
+      aws_storage = ask_aws_storage
+      provisioner = provisioner(aws_access_key, aws_secret_key, aws_region)
       provisioner.run!(
           name: name,
-          type: type,
-          vpc: vpc_id,
-          zone: zone,
-          subnet: subnet_id,
+          type: aws_type,
+          vpc: aws_vpc_id,
+          zone: aws_zone,
+          subnet: aws_subnet_id,
           ssl_cert: ssl_cert,
-          storage: storage,
+          storage: aws_storage,
           version: version,
-          key_pair: key_pair,
+          key_pair: aws_key_pair,
           vault_secret: vault_secret || SecureRandom.hex(24),
           vault_iv: vault_iv || SecureRandom.hex(24),
           mongodb_uri: mongodb_uri,

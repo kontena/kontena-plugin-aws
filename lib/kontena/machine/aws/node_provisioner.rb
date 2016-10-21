@@ -33,69 +33,81 @@ module Kontena::Machine::Aws
           resolve_security_groups_to_ids(opts[:security_groups], opts[:vpc]) :
           ensure_security_group(opts[:grid], opts[:vpc])
 
-      name = opts[:name ] || generate_name
-
       if opts[:subnet].nil?
         subnet = default_subnet(opts[:vpc], region+opts[:zone])
       else
         subnet = ec2.subnet(opts[:subnet])
       end
       dns_server = aws_dns_supported?(opts[:vpc]) ? '169.254.169.253' : '8.8.8.8'
-      userdata_vars = {
-        name: name,
-        version: opts[:version],
-        master_uri: opts[:master_uri],
-        grid_token: opts[:grid_token],
-        dns_server: dns_server
-      }
+      instances = []
+      opts[:count].to_i.times do |i|
+        if opts[:name] && opts[:count].to_i > 1
+          name = "#{opts[:name]}-#{i+1}"
+        elsif opts[:name]
+          name = opts[:name]
+        else
+          name = generate_name
+        end
 
-      ec2_instance = ec2.create_instances({
-        image_id: ami,
-        min_count: 1,
-        max_count: 1,
-        instance_type: opts[:type],
-        key_name: opts[:key_pair],
-        user_data: Base64.encode64(user_data(userdata_vars)),
-        block_device_mappings: [
-          {
-            device_name: '/dev/xvda',
-            virtual_name: 'Root',
-            ebs: {
-              volume_size: opts[:storage],
-              volume_type: 'gp2'
+        userdata_vars = {
+          name: name,
+          version: opts[:version],
+          master_uri: opts[:master_uri],
+          grid_token: opts[:grid_token],
+          dns_server: dns_server
+        }
+
+        ec2_instance = ec2.create_instances({
+          image_id: ami,
+          min_count: 1,
+          max_count: 1,
+          instance_type: opts[:type],
+          key_name: opts[:key_pair],
+          user_data: Base64.encode64(user_data(userdata_vars)),
+          block_device_mappings: [
+            {
+              device_name: '/dev/xvda',
+              virtual_name: 'Root',
+              ebs: {
+                volume_size: opts[:storage],
+                volume_type: 'gp2'
+              }
             }
-          }
-        ],
-        network_interfaces: [
-         {
-           device_index: 0,
-           subnet_id: subnet.subnet_id,
-           groups: security_groups,
-           associate_public_ip_address: opts[:associate_public_ip],
-           delete_on_termination: true
-         }
-        ]
-      }).first
-      ec2_instance.create_tags({
-        tags: [
-          {key: 'Name', value: name},
-          {key: 'kontena_grid', value: opts[:grid]}
-        ]
-      })
+          ],
+          network_interfaces: [
+           {
+             device_index: 0,
+             subnet_id: subnet.subnet_id,
+             groups: security_groups,
+             associate_public_ip_address: opts[:associate_public_ip],
+             delete_on_termination: true
+           }
+          ]
+        }).first
+        ec2_instance.create_tags({
+          tags: [
+            {key: 'Name', value: name},
+            {key: 'kontena_grid', value: opts[:grid]}
+          ]
+        })
 
-      spinner "Creating AWS instance #{name.colorize(:cyan)} " do
-        sleep 1 until ec2_instance.reload.state.name == 'running'
+        spinner "Creating AWS instance #{name.colorize(:cyan)} " do
+          sleep 1 until ec2_instance.reload.state.name == 'running'
+        end
+        instances << name
       end
-      node = nil
-      spinner "Waiting for node #{name.colorize(:cyan)} join to grid #{opts[:grid].colorize(:cyan)} " do
-        sleep 1 until node = instance_exists_in_grid?(opts[:grid], name)
+      instances.each do |instance_name|
+        node = nil
+        spinner "Waiting for node #{instance_name.colorize(:cyan)} join to grid #{opts[:grid].colorize(:cyan)} " do
+          sleep 1 until node = instance_exists_in_grid?(opts[:grid], instance_name)
+        end
+        labels = [
+          "region=#{region}",
+          "az=#{opts[:zone]}",
+          "provider=aws"
+        ]
+        set_labels(node, labels)
       end
-      labels = [
-        "region=#{region}",
-        "az=#{opts[:zone]}",
-        "provider=aws"
-      ]
-      set_labels(node, labels)
     end
 
     ##

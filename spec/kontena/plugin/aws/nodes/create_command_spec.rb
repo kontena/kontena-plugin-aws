@@ -1,5 +1,6 @@
 require 'spec_helper'
 require 'kontena/plugin/aws_command'
+require 'aws-sdk'
 
 describe Kontena::Plugin::Aws::Nodes::CreateCommand do
 
@@ -15,6 +16,10 @@ describe Kontena::Plugin::Aws::Nodes::CreateCommand do
     spy(:client)
   end
 
+  before(:each) do
+    allow(Aws::EC2::Client).to receive(:new).and_return(spy)
+  end
+
   describe '#run' do
     before(:each) do
       allow(subject).to receive(:require_current_grid).and_return('test-grid')
@@ -25,18 +30,20 @@ describe Kontena::Plugin::Aws::Nodes::CreateCommand do
       allow(subject).to receive(:client).and_return(client)
     end
 
-    it 'raises usage error if no options are defined' do
-      expect {
-        subject.run([])
-      }.to raise_error(Clamp::UsageError)
+    it 'prompts user if options are missing' do
+      expect(subject).to receive(:prompt).at_least(:once).and_return(spy)
+      allow(subject).to receive(:provisioner).and_return(provisioner)
+      subject.run([])
     end
 
     it 'passes options to provisioner' do
       options = [
         '--access-key', 'foo',
         '--secret-key', 'bar',
+        '--region', 'eu-west-1',
         '--key-pair', 'master-key'
       ]
+      expect(subject).to receive(:prompt).at_least(:once).and_return(spy)
       expect(subject).to receive(:provisioner).with(client, 'foo', 'bar', 'eu-west-1').and_return(provisioner)
       expect(provisioner).to receive(:run!).with(
         hash_including(key_pair: 'master-key')

@@ -103,12 +103,16 @@ module Kontena::Machine::Aws
         spinner "Waiting for #{name.colorize(:cyan)} to start " do
           sleep 1 until master_running?(http_client)
         end
-        vfakespinner "Kontena Master is now running at #{master_url}".colorize(:green)
+
+        puts
+        puts "Kontena Master is now running at #{master_url}"
+        puts        
       end
       {
         name: name.sub('kontena-master-', ''),
         public_ip: public_ip,
-        code: opts[:initial_admin_code]
+        code: opts[:initial_admin_code],
+        provider: 'aws'
       }
     end
 
