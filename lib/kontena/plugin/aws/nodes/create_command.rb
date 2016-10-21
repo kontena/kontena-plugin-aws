@@ -5,8 +5,8 @@ module Kontena::Plugin::Aws::Nodes
     include Kontena::Plugin::Aws::Prompts
 
     parameter "[NAME]", "Node name"
-    option "--access-key", "ACCESS_KEY", "AWS access key ID", environment_variable: "AWS_ACCESS_KEY"
-    option "--secret-key", "SECRET_KEY", "AWS secret key", environment_variable: "AWS_SECRET_KEY"
+    option "--access-key", "ACCESS_KEY", "AWS access key ID", environment_variable: "AWS_ACCESS_KEY_ID"
+    option "--secret-key", "SECRET_KEY", "AWS secret access key", environment_variable: "AWS_SECRET_ACCESS_KEY"
     option "--key-pair", "KEY_PAIR", "EC2 Key Pair"
     option "--region", "REGION", "EC2 Region", environment_variable: "AWS_REGION"
     option "--zone", "ZONE", "EC2 Availability Zone (a,b,c,d,e)"
