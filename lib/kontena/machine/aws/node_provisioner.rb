@@ -104,7 +104,8 @@ module Kontena::Machine::Aws
         labels = [
           "region=#{region}",
           "az=#{opts[:zone]}",
-          "provider=aws"
+          "provider=aws",
+          "type=#{opts[:type]}"
         ]
         set_labels(node, labels)
       end
