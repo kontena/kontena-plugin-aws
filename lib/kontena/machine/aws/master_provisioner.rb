@@ -2,6 +2,7 @@ require 'fileutils'
 require 'erb'
 require 'open3'
 require 'securerandom'
+require 'json'
 
 require_relative 'common'
 
@@ -30,7 +31,7 @@ module Kontena::Machine::Aws
         abort('Invalid ssl cert') unless File.exists?(File.expand_path(opts[:ssl_cert]))
         ssl_cert = File.read(File.expand_path(opts[:ssl_cert]))
       else
-        spinner "Generating self-signed SSL certificate" do
+        spinner "Generating a self-signed SSL certificate" do
           ssl_cert = generate_self_signed_cert
         end
       end
@@ -89,10 +90,11 @@ module Kontena::Machine::Aws
         ]
       })
 
-      spinner "Creating AWS instance #{name.colorize(:cyan)} " do
+      spinner "Creating an AWS instance #{name.colorize(:cyan)} " do
         sleep 1 until ec2_instance.reload.state.name == 'running'
       end
       public_ip = ec2_instance.reload.public_ip_address
+      master_version = nil
       if public_ip.nil?
         master_url = "https://#{ec2_instance.private_ip_address}"
         puts "Could not get public IP for the created master, private connect url is: #{master_url}"
@@ -101,18 +103,21 @@ module Kontena::Machine::Aws
         Excon.defaults[:ssl_verify_peer] = false
         http_client = Excon.new(master_url, :connect_timeout => 10)
         spinner "Waiting for #{name.colorize(:cyan)} to start " do
-          sleep 1 until master_running?(http_client)
+          sleep 0.5 until master_running?(http_client)
         end
 
-        puts
-        puts "Kontena Master is now running at #{master_url}"
-        puts        
+        spinner "Retrieving Kontena Master version" do
+          master_version = JSON.parse(http_client.get(path: '/').body)["version"] rescue nil
+        end
+
+        spinner "Kontena Master #{master_version} is now running at #{master_url}"
       end
       {
         name: name.sub('kontena-master-', ''),
         public_ip: public_ip,
         code: opts[:initial_admin_code],
-        provider: 'aws'
+        provider: 'aws',
+        version: master_version
       }
     end
 
