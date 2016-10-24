@@ -30,7 +30,7 @@ module Kontena::Machine::Aws
         abort('Invalid ssl cert') unless File.exists?(File.expand_path(opts[:ssl_cert]))
         ssl_cert = File.read(File.expand_path(opts[:ssl_cert]))
       else
-        spinner "Generating self-signed SSL certificate" do
+        spinner "Generating a self-signed SSL certificate" do
           ssl_cert = generate_self_signed_cert
         end
       end

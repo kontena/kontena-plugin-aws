@@ -8,7 +8,7 @@ module Kontena::Plugin::Aws::Master
     option "--access-key", "ACCESS_KEY", "AWS access key ID", required: true
     option "--secret-key", "SECRET_KEY", "AWS secret key", required: true
     option "--key-pair", "KEY_PAIR", "EC2 key pair name", required: true
-    option "--ssl-cert", "SSL CERT", "SSL certificate file (default: generate self-signed cert)"
+    option "--ssl-cert", "SSL CERT", "SSL certificate file (default: generate a self-signed cert)"
     option "--region", "REGION", "EC2 Region", default: 'eu-west-1'
     option "--zone", "ZONE", "EC2 Availability Zone", default: 'a'
     option "--vpc-id", "VPC ID", "Virtual Private Cloud (VPC) ID (default: default vpc)"
