@@ -2,6 +2,7 @@ require 'fileutils'
 require 'erb'
 require 'open3'
 require 'securerandom'
+require 'json'
 
 require_relative 'common'
 
@@ -89,10 +90,13 @@ module Kontena::Machine::Aws
         ]
       })
 
-      spinner "Creating AWS instance #{name.colorize(:cyan)} " do
-        sleep 1 until ec2_instance.reload.state.name == 'running'
+      spinner "Creating an AWS instance #{name.colorize(:cyan)} " do
+        sleep 0.5 until ec2_instance.reload.state.name == 'running'
       end
       public_ip = ec2_instance.reload.public_ip_address
+
+      master_version = nil
+
       if public_ip.nil?
         master_url = "https://#{ec2_instance.private_ip_address}"
         puts "Could not get public IP for the created master, private connect url is: #{master_url}"
@@ -101,13 +105,19 @@ module Kontena::Machine::Aws
         Excon.defaults[:ssl_verify_peer] = false
         http_client = Excon.new(master_url, :connect_timeout => 10)
         spinner "Waiting for #{name.colorize(:cyan)} to start " do
-          sleep 1 until master_running?(http_client)
+          sleep 0.5 until master_running?(http_client)
         end
-        vfakespinner "Kontena Master is now running at #{master_url}".colorize(:green)
+        spinner "Retrieving Kontena Master version" do
+          master_version = JSON.parse(http_client.get(path: '/').body)["version"] rescue nil
+        end
+        
+        spinner "Kontena Master #{master_version} is now running at #{master_url}".colorize(:green)
       end
       {
         name: name.sub('kontena-master-', ''),
         public_ip: public_ip,
+        provider: 'aws',
+        version: master_version,
         code: opts[:initial_admin_code]
       }
     end
