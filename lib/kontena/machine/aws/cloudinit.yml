@@ -21,8 +21,8 @@ write_files:
       fs.inotify.max_user_instances = 8192
 coreos:
   units:
-    - name: 00-eth.network
-      runtime: true
+    - name: zz-default.network
+      runtime: false
       content: |
         [Match]
         Name=eth*
@@ -30,9 +30,11 @@ coreos:
         DHCP=yes
         DNS=172.17.43.1
         DNS=<%= dns_server %>
-        DOMAINS=kontena.local
+        Domains=kontena.local
         [DHCP]
         UseDNS=false
+        UseMTU=true
+        UseDomains=true
     - name: etcd2.service
       command: start
       enable: true
@@ -43,14 +45,10 @@ coreos:
         Restart=always
         RestartSec=5
         ExecStart=/usr/bin/docker logs --tail=10 -f kontena-etcd
-    - name: 10-weave.network
-      runtime: false
-      content: |
-        [Match]
-        Type=bridge
-        Name=weave*
-
-        [Network]
+    - name: 50-docker.network
+      mask: true
+    - name: 50-docker-veth.network
+      mask: true
     - name: kontena-agent.service
       command: start
       enable: true
