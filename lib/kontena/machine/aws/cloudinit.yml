@@ -30,7 +30,7 @@ coreos:
         DHCP=yes
         DNS=172.17.43.1
         DNS=<%= dns_server %>
-        DOMAINS=kontena.local
+        Domains=kontena.local
         [DHCP]
         UseDNS=false
         UseMTU=true
