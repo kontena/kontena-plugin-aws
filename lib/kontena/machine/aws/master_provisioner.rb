@@ -119,7 +119,9 @@ module Kontena::Machine::Aws
         provider: 'aws',
         version: master_version
       }
-      data[:ssl_certificate] = certificate_public_key(ssl_cert) unless opts[:ssl_cert]
+      if self.respond_to?(:certificate_public_key)
+        data[:ssl_certificate] = certificate_public_key(ssl_cert) unless opts[:ssl_cert]
+      end
 
       data
     end
