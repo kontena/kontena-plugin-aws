@@ -112,13 +112,16 @@ module Kontena::Machine::Aws
 
         spinner "Kontena Master #{master_version} is now running at #{master_url}"
       end
-      {
+      data = {
         name: name.sub('kontena-master-', ''),
         public_ip: public_ip,
         code: opts[:initial_admin_code],
         provider: 'aws',
         version: master_version
       }
+      data[:ssl_certificate] = certificate_public_key(ssl_cert) unless opts[:ssl_cert]
+
+      data
     end
 
     ##
