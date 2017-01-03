@@ -16,7 +16,7 @@ module Kontena::Plugin::Aws::Nodes
     option "--storage", "STORAGE", "Storage size (GiB)"
     option "--count", "COUNT", "How many instances to create"
     option "--version", "VERSION", "Define installed Kontena version", default: 'latest'
-    option "--associate-public-ip-address", :flag, "Whether to associated public IP in case the VPC defaults to not doing it", default: true, attribute_name: :associate_public_ip
+    option "--[no-]associate-public-ip-address", :flag, "Whether to associated public IP in case the VPC defaults to not doing it", default: true, attribute_name: :associate_public_ip
     option "--security-groups", "SECURITY GROUPS", "Comma separated list of security groups (names) where the new instance will be attached (default: create grid specific group if not already existing)"
 
     def execute
