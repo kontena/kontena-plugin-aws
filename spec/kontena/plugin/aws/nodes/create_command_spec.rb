@@ -36,6 +36,12 @@ describe Kontena::Plugin::Aws::Nodes::CreateCommand do
       subject.run([])
     end
 
+    it 'requires current master' do
+      expect(subject).to receive(:verify_current_master).and_return(true)
+      expect(subject).to receive(:prompt).at_least(:once).and_return(spy)
+      subject.run([])
+    end
+
     it 'passes options to provisioner' do
       options = [
         '--access-key', 'foo',
