@@ -25,7 +25,7 @@ module Kontena::Plugin::Aws::Master
     option "--security-groups", "SECURITY_GROUPS", "Comma separated list of security groups (names) where the new instance will be attached (default: create 'kontena_master' group if not already existing)"
 
     def execute
-      require 'kontena/machine/aws'
+      require_relative '../../../machine/aws'
       aws_access_key = ask_aws_access_key
       aws_secret_key = ask_aws_secret_key
       aws_region = ask_aws_region(aws_access_key, aws_secret_key)
