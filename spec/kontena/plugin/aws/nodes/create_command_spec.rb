@@ -37,9 +37,7 @@ describe Kontena::Plugin::Aws::Nodes::CreateCommand do
     end
 
     it 'requires current master' do
-      expect(subject).to receive(:verify_current_master).and_return(true)
-      expect(subject).to receive(:prompt).at_least(:once).and_return(spy)
-      subject.run([])
+      expect(subject.class.requires_current_master?).to be_truthy
     end
 
     it 'passes options to provisioner' do
