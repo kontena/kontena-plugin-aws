@@ -128,9 +128,9 @@ module Kontena::Plugin::Aws::Prompts
     end
   end
 
-  def ask_node(token)
+  def ask_node
     if self.name.nil?
-      nodes = client(token).get("grids/#{current_grid}/nodes")
+      nodes = client.get("grids/#{current_grid}/nodes")
       nodes = nodes['nodes'].select{ |n|
         n['labels'] && n['labels'].include?('provider=aws'.freeze)
       }

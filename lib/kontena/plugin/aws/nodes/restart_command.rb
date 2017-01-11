@@ -9,12 +9,12 @@ module Kontena::Plugin::Aws::Nodes
     option "--secret-key", "SECRET_KEY", "AWS secret access key", environment_variable: "AWS_SECRET_ACCESS_KEY"
     option "--region", "REGION", "EC2 Region", environment_variable: "AWS_REGION"
 
+    requires_current_master
+
     def execute
-      require_api_url
       require_current_grid
-      token = require_token
-      node_name = self.name || ask_node(token)
-      node = client(token).get("grids/#{current_grid}/nodes/#{node_name}")
+      node_name = self.name || ask_node
+      node = client.get("grids/#{current_grid}/nodes/#{node_name}")
 
       aws_access_key = ask_aws_access_key
       aws_secret_key = ask_aws_secret_key

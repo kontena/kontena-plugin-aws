@@ -22,10 +22,10 @@ describe Kontena::Plugin::Aws::Nodes::CreateCommand do
 
   describe '#run' do
     before(:each) do
+      allow(subject).to receive(:verify_current_master).and_return(true)
       allow(subject).to receive(:require_current_grid).and_return('test-grid')
       allow(subject).to receive(:require_api_url).and_return('http://master.example.com')
       allow(subject).to receive(:api_url).and_return('http://master.example.com')
-      allow(subject).to receive(:require_token).and_return('12345')
       allow(subject).to receive(:fetch_grid).and_return({})
       allow(subject).to receive(:client).and_return(client)
     end
@@ -34,6 +34,10 @@ describe Kontena::Plugin::Aws::Nodes::CreateCommand do
       expect(subject).to receive(:prompt).at_least(:once).and_return(spy)
       allow(subject).to receive(:provisioner).and_return(provisioner)
       subject.run([])
+    end
+
+    it 'requires current master' do
+      expect(subject.class.requires_current_master?).to be_truthy
     end
 
     it 'passes options to provisioner' do

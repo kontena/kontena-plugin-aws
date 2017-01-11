@@ -17,10 +17,10 @@ describe Kontena::Plugin::Aws::Nodes::TerminateCommand do
 
   describe '#run' do
     before(:each) do
+      allow(subject).to receive(:verify_current_master).and_return(true)
       allow(subject).to receive(:require_current_grid).and_return('test-grid')
       allow(subject).to receive(:require_api_url).and_return('http://master.example.com')
       allow(subject).to receive(:api_url).and_return('http://master.example.com')
-      allow(subject).to receive(:require_token).and_return('12345')
       allow(subject).to receive(:grid).and_return({})
       allow(subject).to receive(:client).and_return(client)
       allow(Aws::EC2::Client).to receive(:new).and_return(spy)
@@ -32,6 +32,10 @@ describe Kontena::Plugin::Aws::Nodes::TerminateCommand do
       subject.run([])
     end
 
+    it 'requires current master' do
+      expect(subject.class.requires_current_master?).to be_truthy
+    end
+
     it 'passes options to provisioner' do
       options = [
         '--access-key', 'foo',
@@ -40,7 +44,7 @@ describe Kontena::Plugin::Aws::Nodes::TerminateCommand do
         '--force',
         'my-node'
       ]
-      expect(subject).to receive(:destroyer).with(client, 'foo', 'bar', 'eu-west-1').and_return(provisioner)
+      expect(subject).to receive(:destroyer).with('foo', 'bar', 'eu-west-1').and_return(provisioner)
       expect(provisioner).to receive(:run!)
       subject.run(options)
     end

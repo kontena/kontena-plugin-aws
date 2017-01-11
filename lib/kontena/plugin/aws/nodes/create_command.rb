@@ -19,11 +19,12 @@ module Kontena::Plugin::Aws::Nodes
     option "--[no-]associate-public-ip-address", :flag, "Whether to associated public IP in case the VPC defaults to not doing it", default: true, attribute_name: :associate_public_ip
     option "--security-groups", "SECURITY GROUPS", "Comma separated list of security groups (names) where the new instance will be attached (default: create grid specific group if not already existing)"
 
+    requires_current_master
+
     def execute
-      require_api_url
       require_current_grid
 
-      require 'kontena/machine/aws'
+      require_relative '../../../machine/aws'
       grid = fetch_grid(current_grid)
       aws_access_key = ask_aws_access_key
       aws_secret_key = ask_aws_secret_key
@@ -36,7 +37,7 @@ module Kontena::Plugin::Aws::Nodes
       aws_type = ask_aws_instance_type
       aws_storage = ask_aws_storage
       aws_count = ask_instance_count
-      provisioner = provisioner(client(require_token), aws_access_key, aws_secret_key, aws_region)
+      provisioner = provisioner(client, aws_access_key, aws_secret_key, aws_region)
       provisioner.run!(
           master_uri: api_url,
           grid_token: grid['token'],
@@ -58,7 +59,7 @@ module Kontena::Plugin::Aws::Nodes
     # @param [String] id
     # @return [Hash]
     def fetch_grid(id)
-      client(require_token).get("grids/#{id}")
+      client.get("grids/#{id}")
     end
 
     # @param [Kontena::Client] client
