@@ -16,7 +16,7 @@ module Kontena::Plugin::Aws::Nodes
       require_current_grid
 
       node_name = self.name || ask_node
-      node = client.get("grids/#{current_grid}/nodes/#{node_name}")
+      node = client.get("nodes/#{current_grid}/#{node_name}")
       aws_access_key = ask_aws_access_key
       aws_secret_key = ask_aws_secret_key
       aws_region = self.region || resolve_or_ask_region(node, aws_access_key, aws_secret_key)
