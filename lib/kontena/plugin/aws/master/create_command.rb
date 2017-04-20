@@ -23,9 +23,13 @@ module Kontena::Plugin::Aws::Master
     option "--version", "VERSION", "Define installed Kontena version", default: 'latest'
     option "--associate-public-ip-address", :flag, "Whether to associated public IP in case the VPC defaults to not doing it", default: true, attribute_name: :associate_public_ip
     option "--security-groups", "SECURITY_GROUPS", "Comma separated list of security groups (names) where the new instance will be attached (default: create 'kontena_master' group if not already existing)"
+    option "--aws-bundled-cert", :flag, "Use CA certificate bundled in AWS SDK", default: false
 
     def execute
       require_relative '../../../machine/aws'
+
+      Aws.use_bundled_cert! if aws_bundled_cert?
+
       aws_access_key = ask_aws_access_key
       aws_secret_key = ask_aws_secret_key
       aws_region = ask_aws_region(aws_access_key, aws_secret_key)
@@ -55,6 +59,9 @@ module Kontena::Plugin::Aws::Master
           security_groups: security_groups,
           initial_admin_code: SecureRandom.hex(16)
       )
+    rescue Seahorse::Client::NetworkingError => ex
+      raise ex unless ex.message.match(/certificate verify failed/)
+      exit_with_error Kontena::Machine::Aws.ssl_fail_message(aws_bundled_cert?)
     end
 
     def provisioner(access_key, secret_key, region)

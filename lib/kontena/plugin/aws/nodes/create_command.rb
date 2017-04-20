@@ -18,13 +18,15 @@ module Kontena::Plugin::Aws::Nodes
     option "--version", "VERSION", "Define installed Kontena version", default: 'latest'
     option "--[no-]associate-public-ip-address", :flag, "Whether to associated public IP in case the VPC defaults to not doing it", default: true, attribute_name: :associate_public_ip
     option "--security-groups", "SECURITY GROUPS", "Comma separated list of security groups (names) where the new instance will be attached (default: create grid specific group if not already existing)"
+    option "--aws-bundled-cert", :flag, "Use CA certificate bundled in AWS SDK", default: false
 
     requires_current_master
 
     def execute
       require_current_grid
-
       require_relative '../../../machine/aws'
+      Aws.use_bundled_cert! if aws_bundled_cert?
+
       grid = fetch_grid(current_grid)
       aws_access_key = ask_aws_access_key
       aws_secret_key = ask_aws_secret_key
@@ -54,6 +56,9 @@ module Kontena::Plugin::Aws::Nodes
           associate_public_ip: associate_public_ip?,
           security_groups: security_groups
       )
+    rescue Seahorse::Client::NetworkingError => ex
+      raise ex unless ex.message.match(/certificate verify failed/)
+      exit_with_error Kontena::Machine::Aws.ssl_fail_message(aws_bundled_cert?)
     end
 
     # @param [String] id
