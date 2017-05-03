@@ -1,9 +1,9 @@
 language: ruby
 rvm:
-  - 2.0.0-p648
-  - 2.1.8
-  - 2.2.3
-  - 2.3.1
+  - 2.1.10
+  - 2.2.6
+  - 2.3.3
+  - 2.4.1
 env:
   - secure: "JgI//AQcXde0SoT07sOCeQEuIR1jSz1mDa0O6riCcHSDWnPKo1KN91oJl9W4nY44sXOKhpc09HmQLOYP0QpK4GspD5zIAO5txeLpbOz0KDPkp15/oC3w6w1Q2A++V3Q+/6XnNIHaR/0/o2o0SAZgAFzHdOjwW9lAZoM1aydLX11TSGpTj88bqfz/gf0WfV+bOhSxtxgiH2h+I66RA2lc+MnWITfEhsXkc+blbHArXJc6gLXVO1/ks5WE4eEzTB7n7XM1WGvLm3sYmOZ+onphO8YESoYqkGmNR/5nSrMlHwHbn70HqR3IDUUe4G+tpYOVTX2odgeJTZMuH/V9Dy9LpyNqiOgX8cYbE9/GhnVlSjbMBK99m8m8trT49E9zEKIcmhUMQsI4YCfTdP+hfALcGRMB93XGrQNirvEjORw5kxNYg9Um3UPBeNYSKEbNE58zASF/d9/08tT9cQIOEo2OQCs6zkiuGUrnCTZYdnNWh2xY+sPpoDcnvGMb3h2lzvM4hkbf6HfMIEBLbi8m/zgYjaXoDxpxXyDH9TKkq8zO6/1koGaQQGhLW9ojtYGbpH6BOdWysxJVUk1rRUs3Q39kqRW+diS04cb/ipywfHzw/SbmqdaVkCL/e7MFjDlqiqRdNVUYGnZ65ZUTkgJo/2kuTuKXutar8qaBBvILfVZ4Hno="
 cache: bundler
@@ -14,3 +14,4 @@ deploy:
   gem: kontena-plugin-aws
   on:
     tags: true
+    rvm: 2.4.1
