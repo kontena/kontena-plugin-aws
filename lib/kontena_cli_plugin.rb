@@ -1,5 +1,5 @@
 require 'kontena_cli'
 require_relative 'kontena/plugin/aws'
-require_relative 'kontena/plugin/aws_command'
+require 'kontena/cli/subcommand_loader'
 
-Kontena::MainCommand.register("aws", "AWS specific commands", Kontena::Plugin::AwsCommand)
+Kontena::MainCommand.register("aws", "AWS specific commands", Kontena::Cli::SubcommandLoader.new('kontena/plugin/aws_command'))

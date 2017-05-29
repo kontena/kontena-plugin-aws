@@ -1,5 +1,4 @@
-require 'securerandom'
-require_relative '../prompts'
+require 'kontena/plugin/aws/prompts'
 
 module Kontena::Plugin::Aws::Master
   class CreateCommand < Kontena::Command
@@ -16,7 +15,8 @@ module Kontena::Plugin::Aws::Master
     option "--mongodb-uri", "URI", "External MongoDB uri (optional)"
 
     def execute
-      require_relative '../../../machine/aws'
+      require 'securerandom'
+      require 'kontena/machine/aws'
 
       provisioner.run!(
         name: name,
