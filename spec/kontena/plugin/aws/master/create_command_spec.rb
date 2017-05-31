@@ -1,6 +1,6 @@
 require 'spec_helper'
 require 'aws-sdk'
-require 'kontena/plugin/aws_command'
+require 'kontena/plugin/aws/master/create_command'
 
 describe Kontena::Plugin::Aws::Master::CreateCommand do
 

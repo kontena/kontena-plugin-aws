@@ -1,5 +1,5 @@
 require 'spec_helper'
-require 'kontena/plugin/aws_command'
+require 'kontena/plugin/aws/nodes/terminate_command'
 require 'aws-sdk'
 describe Kontena::Plugin::Aws::Nodes::TerminateCommand do
 
