@@ -29,7 +29,7 @@ describe Kontena::Plugin::Aws::Nodes::TerminateCommand do
     it 'raises usage error if no options are defined' do
       allow(subject).to receive(:destroyer).and_return(provisioner)
       expect(subject).to receive(:prompt).at_least(:once).and_return(spy)
-      subject.run([])
+      subject.run(['--force'])
     end
 
     it 'requires current master' do
@@ -44,7 +44,7 @@ describe Kontena::Plugin::Aws::Nodes::TerminateCommand do
         '--force',
         'my-node'
       ]
-      expect(subject).to receive(:destroyer).with('foo', 'bar', 'eu-west-1').and_return(provisioner)
+      expect(subject).to receive(:destroyer).and_return(provisioner)
       expect(provisioner).to receive(:run!)
       subject.run(options)
     end

@@ -1,7 +1,7 @@
 module Kontena
   module Machine
     module Aws
-      class NodeDestroyer
+      class MasterDestroyer
 
         include Kontena::Cli::ShellSpinner
 
@@ -19,7 +19,7 @@ module Kontena
           )
         end
 
-        def run!(grid, name)
+        def run!(name)
           instances = ec2.instances({
             filters: [
               {name: 'tag:Name', values: [name]}
@@ -38,14 +38,12 @@ module Kontena
           else
             abort "Cannot find instance #{name.colorize(:cyan)} in AWS"
           end
-          node = api_client.get("grids/#{grid['id']}/nodes")['nodes'].find{|n| n['name'] == name}
-          if node
-            spinner "Removing node #{name.colorize(:cyan)} from grid #{grid['name'].colorize(:cyan)} " do
-              api_client.delete("nodes/#{grid['id']}/#{name}")
-            end
-          end
+          Kontena::Cli::Config.instance.servers.delete(config.current_master)
+          Kontena::Cli::Config.instance.current_server = nil
+          Kontena::Cli::Config.instance.write
         end
       end
     end
   end
 end
+

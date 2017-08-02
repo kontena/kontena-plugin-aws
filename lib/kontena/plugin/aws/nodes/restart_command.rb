@@ -3,11 +3,12 @@ module Kontena::Plugin::Aws::Nodes
     include Kontena::Cli::Common
     include Kontena::Cli::GridOptions
     include Kontena::Plugin::Aws::Prompts
+    prepend Kontena::Plugin::Aws::Prompts::Common::Defaults
 
     parameter "[NAME]", "Node name"
     option "--access-key", "ACCESS_KEY", "AWS access key ID", environment_variable: "AWS_ACCESS_KEY_ID"
     option "--secret-key", "SECRET_KEY", "AWS secret access key", environment_variable: "AWS_SECRET_ACCESS_KEY"
-    option "--region", "REGION", "EC2 Region", environment_variable: "AWS_REGION"
+    option "--region", "REGION", "EC2 Region (default: node's region)", environment_variable: "AWS_REGION", attribute_name: :aws_region
     option "--aws-bundled-cert", :flag, "Use CA certificate bundled in AWS SDK", default: false
 
     requires_current_master
@@ -15,31 +16,23 @@ module Kontena::Plugin::Aws::Nodes
     def execute
       require_current_grid
       node_name = self.name || ask_node
-      node = client.get("nodes/#{current_grid}/#{node_name}")
+      @node = client.get("nodes/#{current_grid}/#{node_name}")
 
-      aws_access_key = ask_aws_access_key
-      aws_secret_key = ask_aws_secret_key
-      aws_region = self.region || resolve_or_ask_region(node, aws_access_key, aws_secret_key)
       require_relative '../../../machine/aws'
       Aws.use_bundled_cert! if aws_bundled_cert?
 
-      restarter = restarter(aws_access_key, aws_secret_key, aws_region)
       restarter.run!(node_name)
     rescue Seahorse::Client::NetworkingError => ex
       raise ex unless ex.message.match(/certificate verify failed/)
       exit_with_error Kontena::Machine::Aws.ssl_fail_message(aws_bundled_cert?)
     end
 
-    def restarter(access_key, secret_key, region)
-      Kontena::Machine::Aws::NodeRestarter.new(access_key, secret_key, region)
+    def restarter
+      Kontena::Machine::Aws::NodeRestarter.new(access_key, secret_key, aws_region)
     end
 
-    def resolve_or_ask_region(node, access_key, secret_key)
-      if node['labels'] && region_label = node['labels'].find{ |l| l.split('=').first == 'region' }
-        region = region_label.split('=').last
-      end
-      region = ask_aws_region(access_key, secret_key) unless region
-      region
+    def default_aws_region
+      resolve_region(@node) || default_region
     end
   end
 end

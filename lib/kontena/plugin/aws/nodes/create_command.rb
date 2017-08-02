@@ -5,56 +5,33 @@ module Kontena::Plugin::Aws::Nodes
     include Kontena::Plugin::Aws::Prompts
 
     parameter "[NAME]", "Node name"
-    option "--access-key", "ACCESS_KEY", "AWS access key ID", environment_variable: "AWS_ACCESS_KEY_ID"
-    option "--secret-key", "SECRET_KEY", "AWS secret access key", environment_variable: "AWS_SECRET_ACCESS_KEY"
-    option "--key-pair", "KEY_PAIR", "EC2 Key Pair"
-    option "--region", "REGION", "EC2 Region", environment_variable: "AWS_REGION"
-    option "--zone", "ZONE", "EC2 Availability Zone (a,b,c,d,e)"
-    option "--vpc-id", "VPC ID", "Virtual Private Cloud (VPC) ID (default: default vpc)"
-    option "--subnet-id", "SUBNET ID", "VPC option to specify subnet to launch instance into (default: first subnet in vpc/az)"
-    option "--type", "SIZE", "Instance type"
-    option "--storage", "STORAGE", "Storage size (GiB)"
+
+    include Kontena::Plugin::Aws::Prompts::Common
+
     option "--count", "COUNT", "How many instances to create"
-    option "--version", "VERSION", "Define installed Kontena version", default: 'latest'
-    option "--[no-]associate-public-ip-address", :flag, "Whether to associated public IP in case the VPC defaults to not doing it", default: true, attribute_name: :associate_public_ip
-    option "--security-groups", "SECURITY GROUPS", "Comma separated list of security groups (names) where the new instance will be attached (default: create grid specific group if not already existing)"
-    option "--aws-bundled-cert", :flag, "Use CA certificate bundled in AWS SDK", default: false
 
     requires_current_master
 
     def execute
       require_current_grid
       require_relative '../../../machine/aws'
-      Aws.use_bundled_cert! if aws_bundled_cert?
 
       grid = fetch_grid(current_grid)
-      aws_access_key = ask_aws_access_key
-      aws_secret_key = ask_aws_secret_key
-      aws_region = ask_aws_region(aws_access_key, aws_secret_key)
-      aws_zone = ask_aws_az(aws_access_key, aws_secret_key, aws_region)
-      aws_vpc_id = ask_aws_vpc(aws_access_key, aws_secret_key, aws_region)
-      exit_with_error("Could not find any Virtual Private Cloud (VPC). Please create one in the AWS console first.") unless aws_vpc_id
-      aws_subnet_id = ask_aws_subnet(aws_access_key, aws_secret_key, aws_region, aws_zone, aws_vpc_id)
-      aws_key_pair = ask_aws_key_pair(aws_access_key, aws_secret_key, aws_region)
-      aws_type = ask_aws_instance_type
-      aws_storage = ask_aws_storage
-      aws_count = ask_instance_count
-      provisioner = provisioner(client, aws_access_key, aws_secret_key, aws_region)
       provisioner.run!(
-          master_uri: api_url,
-          grid_token: grid['token'],
-          grid: current_grid,
-          name: name,
-          type: aws_type,
-          vpc: aws_vpc_id,
-          zone: aws_zone,
-          subnet: aws_subnet_id,
-          storage: aws_storage,
-          version: version,
-          key_pair: aws_key_pair,
-          count: aws_count,
-          associate_public_ip: associate_public_ip?,
-          security_groups: security_groups
+        master_uri: api_url,
+        grid_token: grid['token'],
+        grid: current_grid,
+        name: name,
+        type: type,
+        vpc: vpc_id,
+        zone: zone,
+        subnet: subnet_id,
+        storage: storage,
+        version: version,
+        key_pair: key_pair,
+        count: count,
+        associate_public_ip: associate_public_ip?,
+        security_groups: security_groups
       )
     rescue Seahorse::Client::NetworkingError => ex
       raise ex unless ex.message.match(/certificate verify failed/)
@@ -72,16 +49,12 @@ module Kontena::Plugin::Aws::Nodes
     # @param [String] secret_key
     # @param [String] region
     # @return [Kontena::Machine::Aws::NodeProvisioner]
-    def provisioner(client, access_key, secret_key, region)
+    def provisioner
       Kontena::Machine::Aws::NodeProvisioner.new(client, access_key, secret_key, region)
     end
 
-    def ask_instance_count
-      if self.count.nil?
-        prompt.ask('How many instances?: ', default: 1)
-      else
-        self.count
-      end
+    def default_count
+      prompt.ask('How many instances?: ', default: 1)
     end
   end
 end

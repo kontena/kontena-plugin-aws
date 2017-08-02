@@ -33,11 +33,10 @@ module Kontena::Machine::Aws
           resolve_security_groups_to_ids(opts[:security_groups], opts[:vpc]) :
           ensure_security_group(opts[:grid], opts[:vpc])
 
-      if opts[:subnet].nil?
-        subnet = default_subnet(opts[:vpc], region+opts[:zone])
-      else
-        subnet = ec2.subnet(opts[:subnet])
-      end
+      raise "Missing :subnet option" if opts[:subnet].nil?
+      subnet = ec2.subnet(opts[:subnet])
+      abort('Failed to find subnet!') unless subnet
+
       dns_server = aws_dns_supported?(opts[:vpc]) ? '169.254.169.253' : '8.8.8.8'
       instances = []
       opts[:count].to_i.times do |i|
