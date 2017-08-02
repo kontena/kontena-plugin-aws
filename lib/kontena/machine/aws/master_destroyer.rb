@@ -38,9 +38,6 @@ module Kontena
           else
             abort "Cannot find instance #{name.colorize(:cyan)} in AWS"
           end
-          Kontena::Cli::Config.instance.servers.delete(config.current_master)
-          Kontena::Cli::Config.instance.current_server = nil
-          Kontena::Cli::Config.instance.write
         end
       end
     end
