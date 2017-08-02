@@ -77,7 +77,6 @@ module Kontena::Plugin::Aws::Prompts
       end
 
       def default_region
-        STDERR.puts("in default_region_common")
         prompt.select("Choose EC2 region:") do |menu|
           i = 1
           default_region_aws_client.describe_regions.regions.sort_by(&:region_name).each do |region|
@@ -170,7 +169,6 @@ module Kontena::Plugin::Aws::Prompts
   end
 
   def resolve_region(node)
-    STDERR.puts("in resolve_region")
     return nil if node.nil? || node['labels'].nil?
     node['labels'].each do |label|
       tag, value = label.split('=', 2)
