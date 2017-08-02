@@ -33,7 +33,7 @@ describe Kontena::Plugin::Aws::Nodes::CreateCommand do
     it 'prompts user if options are missing' do
       expect(subject).to receive(:prompt).at_least(:once).and_return(spy)
       allow(subject).to receive(:provisioner).and_return(provisioner)
-      subject.run([])
+      subject.run(%w(--vpc-id abcd --subnet-id abcd --key-pair foo))
     end
 
     it 'requires current master' do
@@ -41,14 +41,16 @@ describe Kontena::Plugin::Aws::Nodes::CreateCommand do
     end
 
     it 'passes options to provisioner' do
-      options = [
-        '--access-key', 'foo',
-        '--secret-key', 'bar',
-        '--region', 'eu-west-1',
-        '--key-pair', 'master-key'
-      ]
+      options = %w(
+        --access-key foo
+        --secret-key bar
+        --region eu-west-1
+        --key-pair master-key
+        --vpc-id abcd
+        --subnet-id abcd
+      )
       expect(subject).to receive(:prompt).at_least(:once).and_return(spy)
-      expect(subject).to receive(:provisioner).with(client, 'foo', 'bar', 'eu-west-1').and_return(provisioner)
+      expect(subject).to receive(:provisioner).and_return(provisioner)
       expect(provisioner).to receive(:run!).with(
         hash_including(key_pair: 'master-key')
       )

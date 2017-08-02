@@ -20,21 +20,23 @@ describe Kontena::Plugin::Aws::Master::CreateCommand do
     it 'prompts user if options are missing' do
       expect(subject).to receive(:prompt).at_least(:once).and_return(spy)
       allow(subject).to receive(:provisioner).and_return(provisioner)
-      subject.run(['--name', 'foo', '--skip-auth-provider'])
+      subject.run(%w(--name foo --skip-auth-provider --vpc-id abcd --subnet-id abcd --key-pair foo))
     end
 
     it 'passes options to provisioner' do
-      options = [
-        '--name', 'foo',
-        '--access-key', 'foo',
-        '--secret-key', 'bar',
-        '--region', 'eu-west-1',
-        '--key-pair', 'master-key',
-        '--no-prompt',
-        '--skip-auth-provider'
-      ]
+      options = %w(
+        --name foo
+        --access-key foo
+        --secret-key bar
+        --region eu-west-1
+        --key-pair master-key
+        --vpc-id abcd
+        --subnet-id abcd
+        --no-prompt
+        --skip-auth-provider
+      )
       expect(subject).to receive(:prompt).at_least(:once).and_return(spy)
-      expect(subject).to receive(:provisioner).with('foo', 'bar', 'eu-west-1').and_return(provisioner)
+      expect(subject).to receive(:provisioner).and_return(provisioner)
       expect(provisioner).to receive(:run!).with(
         hash_including(key_pair: 'master-key')
       )
