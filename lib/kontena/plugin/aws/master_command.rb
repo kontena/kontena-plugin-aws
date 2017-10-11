@@ -1,11 +1,4 @@
-require_relative 'master/create_command'
-require_relative 'master/terminate_command'
-
 class Kontena::Plugin::Aws::MasterCommand < Kontena::Command
-
-  subcommand "create", "Create a new master to AWS", Kontena::Plugin::Aws::Master::CreateCommand
-  subcommand "terminate", "Destroy current master from AWS", Kontena::Plugin::Aws::Master::TerminateCommand
-
-  def execute
-  end
+  subcommand "create", "Create a new master to AWS", load_subcommand('kontena/plugin/aws/master/create_command')
+  subcommand "terminate", "Destroy current master from AWS", load_subcommand('kontena/plugin/aws/master/terminate_command')
 end

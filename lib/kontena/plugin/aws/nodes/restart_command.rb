@@ -1,3 +1,5 @@
+require 'kontena/plugin/aws/prompts'
+
 module Kontena::Plugin::Aws::Nodes
   class RestartCommand < Kontena::Command
     include Kontena::Cli::Common

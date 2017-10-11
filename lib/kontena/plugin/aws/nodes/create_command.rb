@@ -1,3 +1,5 @@
+require 'kontena/plugin/aws/prompts'
+
 module Kontena::Plugin::Aws::Nodes
   class CreateCommand < Kontena::Command
     include Kontena::Cli::Common

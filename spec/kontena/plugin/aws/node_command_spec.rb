@@ -1,5 +1,5 @@
 require 'spec_helper'
-require 'kontena/plugin/aws_command'
+require 'kontena/plugin/aws/node_command'
 
 describe Kontena::Plugin::Aws::NodeCommand do
 

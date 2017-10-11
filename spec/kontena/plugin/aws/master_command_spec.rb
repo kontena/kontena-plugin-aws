@@ -1,5 +1,5 @@
 require 'spec_helper'
-require 'kontena/plugin/aws_command'
+require 'kontena/plugin/aws/master_command'
 
 describe Kontena::Plugin::Aws::MasterCommand do
 
