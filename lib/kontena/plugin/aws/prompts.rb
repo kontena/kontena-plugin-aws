@@ -28,11 +28,11 @@ module Kontena::Plugin::Aws::Prompts
 
     module Defaults
       def default_access_key
-        prompt.ask('AWS access key:', echo: false)
+        prompt.mask('AWS access key:')
       end
 
       def default_secret_key
-        prompt.ask('AWS secret key:', echo: false)
+        prompt.mask('AWS secret key:')
       end
 
       CREATE_KEYPAIR_TEXT = 'Create new key pair'
