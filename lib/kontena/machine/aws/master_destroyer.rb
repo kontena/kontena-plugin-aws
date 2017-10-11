@@ -19,15 +19,19 @@ module Kontena
           )
         end
 
-        def run!(name)
+        def master_instance(name)
           instances = ec2.instances({
             filters: [
               {name: 'tag:Name', values: [name]}
             ]
           })
-          abort("Cannot find AWS instance #{name}") if instances.to_a.size == 0
+          abort("Cannot find AWS instance #{name}") if instances.to_a.empty?
           abort("There are multiple instances with name #{name}") if instances.to_a.size > 1
-          instance = instances.first
+          instances.first
+        end
+
+        def run!(name, instance = nil)
+          instance ||= master_instance(name)
           if instance
             spinner "Terminating AWS instance #{name.colorize(:cyan)} " do
               instance.terminate

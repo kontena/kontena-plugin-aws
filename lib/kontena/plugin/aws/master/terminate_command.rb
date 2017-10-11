@@ -16,13 +16,15 @@ module Kontena::Plugin::Aws::Master
     def execute
       require_current_grid
 
-      node_name = config.current_master.name
-      confirm_command(node_name) unless forced?
-
       require_relative '../../../machine/aws'
       Aws.use_bundled_cert! if aws_bundled_cert?
 
-      destroyer.run!(node_name)
+      master_name = config.current_master.name
+      master_instance = destroyer.master_instance(master_name)
+
+      confirm_command(master_name) unless forced?
+
+      destroyer.run!(master_name, master_instance)
     rescue Seahorse::Client::NetworkingError => ex
       raise ex unless ex.message.match(/certificate verify failed/)
       exit_with_error Kontena::Machine::Aws.ssl_fail_message(aws_bundled_cert?)
