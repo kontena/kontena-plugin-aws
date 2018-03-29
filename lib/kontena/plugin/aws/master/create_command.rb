@@ -13,6 +13,7 @@ module Kontena::Plugin::Aws::Master
     option "--vault-secret", "VAULT_SECRET", "Secret key for Vault (default: generate random secret)"
     option "--vault-iv", "VAULT_IV", "Initialization vector for Vault (default: generate random iv)"
     option "--mongodb-uri", "URI", "External MongoDB uri (optional)"
+    option "--ami", "AMI", "Which Container Linux AMI to use (default: latest stable)"
 
     def execute
       require 'securerandom'
@@ -33,7 +34,8 @@ module Kontena::Plugin::Aws::Master
         mongodb_uri: mongodb_uri,
         associate_public_ip: associate_public_ip?,
         security_groups: security_groups,
-        initial_admin_code: SecureRandom.hex(16)
+        initial_admin_code: SecureRandom.hex(16),
+        ami: ami
       )
     rescue Seahorse::Client::NetworkingError => ex
       raise ex unless ex.message.match(/certificate verify failed/)

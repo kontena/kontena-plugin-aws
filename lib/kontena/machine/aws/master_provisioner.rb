@@ -36,8 +36,12 @@ module Kontena::Machine::Aws
         end
       end
 
-      ami = resolve_ami(region)
-      abort('No valid AMI found for region') unless ami
+      if opts[:ami]
+        ami = opts[:ami]
+      else
+        ami = resolve_ami(region)
+        abort('No valid AMI found for region') unless ami
+      end
       opts[:vpc] = default_vpc.vpc_id unless opts[:vpc]
 
       raise "Missing :subnet option" if opts[:subnet].nil?
