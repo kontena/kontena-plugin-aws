@@ -11,6 +11,7 @@ module Kontena::Plugin::Aws::Nodes
     include Kontena::Plugin::Aws::Prompts::Common
 
     option "--count", "COUNT", "How many instances to create"
+    option "--ami", "AMI", "Which Container Linux AMI to use (default: latest stable)"
 
     requires_current_master
 
@@ -33,7 +34,8 @@ module Kontena::Plugin::Aws::Nodes
         key_pair: key_pair,
         count: count,
         associate_public_ip: associate_public_ip?,
-        security_groups: security_groups
+        security_groups: security_groups,
+        ami: ami
       )
     rescue Seahorse::Client::NetworkingError => ex
       raise ex unless ex.message.match(/certificate verify failed/)
