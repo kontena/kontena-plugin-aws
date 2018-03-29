@@ -12,13 +12,18 @@ write_files:
   - path: /etc/systemd/system/docker.service.d/50-kontena.conf
     content: |
         [Service]
-        Environment='DOCKER_OPTS=--insecure-registry="10.81.0.0/16" --bip="172.17.43.1/16"'
+        Environment='DOCKER_OPTS=--log-driver=json-file --log-opt=max-size=20m --insecure-registry="10.81.0.0/16" --bip="172.17.43.1/16"'
         Environment='DOCKER_CGROUPS=--exec-opt native.cgroupdriver=cgroupfs'
-  - path: /etc/sysctl.d/99-inotify.conf
+  - path: /etc/sysctl.d/99-kontena.conf
     owner: root
     permissions: 0644
     content: |
       fs.inotify.max_user_instances = 8192
+      fs.inotify.max_user_watches = 524288
+      vm.max_map_count = 262144
+      kernel.softlockup_panic = 1
+      kernel.softlockup_all_cpu_backtrace = 1
+      kernel.panic = 60
 coreos:
   units:
     - name: zz-default.network
@@ -55,10 +60,9 @@ coreos:
       content: |
         [Unit]
         Description=kontena-agent
+        Documentation=https://www.kontena.io/
         After=network-online.target
         After=docker.service
-        Description=Kontena Agent
-        Documentation=http://www.kontena.io/
         Requires=network-online.target
         Requires=docker.service
 
@@ -76,5 +80,8 @@ coreos:
             -e KONTENA_PEER_INTERFACE=${KONTENA_PEER_INTERFACE} \
             -v=/var/run/docker.sock:/var/run/docker.sock \
             -v=/etc/kontena-agent.env:/etc/kontena.env \
-            --net=host \
+            --net=host --memory 384m \
             kontena/agent:${KONTENA_VERSION}
+
+        [Install]
+        WantedBy=docker.service
